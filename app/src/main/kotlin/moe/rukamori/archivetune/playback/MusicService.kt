@@ -7941,10 +7941,38 @@ class MusicService :
         session: MediaSession,
         startInForegroundRequired: Boolean,
     ) {
-        val keepInForeground = startInForegroundRequired || hasResumablePlaybackNotification()
-        if (keepInForeground) ensureStartedAsForeground()
-        runCatching { super.onUpdateNotification(session, keepInForeground) }
-            .onFailure { reportException(it) }
+        if (startInForegroundRequired) {
+            ensureStartedAsForeground()
+            runCatching { super.onUpdateNotification(session, true) }
+                .onFailure { reportException(it) }
+            return
+        }
+
+        val hasResumable = hasResumablePlaybackNotification()
+        if (hasResumable && player.isPlaying) {
+            // Actively playing — pin the notification in foreground (non-dismissable)
+            ensureStartedAsForeground()
+            runCatching { super.onUpdateNotification(session, true) }
+                .onFailure { reportException(it) }
+        } else if (hasResumable) {
+            // Paused with a resumable queue — detach from foreground so the
+            // notification stays visible but becomes swipe-dismissable
+            runCatching {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                    stopForeground(STOP_FOREGROUND_DETACH)
+                } else {
+                    @Suppress("DEPRECATION")
+                    stopForeground(false)
+                }
+            }
+            hasCalledStartForeground = false
+            runCatching { super.onUpdateNotification(session, false) }
+                .onFailure { reportException(it) }
+        } else {
+            // Nothing to play — let Media3 handle cleanup
+            runCatching { super.onUpdateNotification(session, false) }
+                .onFailure { reportException(it) }
+        }
     }
 
     // ── Widget Support ────────────────────────────────────────────────────────────
