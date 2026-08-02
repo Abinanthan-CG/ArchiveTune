@@ -126,9 +126,9 @@ jobs:
           echo "abi=$ABI" >> "$GITHUB_OUTPUT"
           echo "device_cap=$DEVICE_CAP" >> "$GITHUB_OUTPUT"
           echo "abi_cap=$ABI_CAP" >> "$GITHUB_OUTPUT"
-          echo "gradle_task=assemble${DISTRIBUTION_CAP}${DEVICE_CAP}${ABI_CAP}Release" >> "$GITHUB_OUTPUT"
-          echo "artifact_name=app-${DISTRIBUTION}-${DEVICE}-${ABI}-release" >> "$GITHUB_OUTPUT"
-          echo "apk_name=app-${DISTRIBUTION}-${DEVICE}-${ABI}-release.apk" >> "$GITHUB_OUTPUT"
+          echo "gradle_task=assemble${DISTRIBUTION_CAP}${DEVICE_CAP}${ABI_CAP}Debug" >> "$GITHUB_OUTPUT"
+          echo "artifact_name=app-${DISTRIBUTION}-${DEVICE}-${ABI}-debug" >> "$GITHUB_OUTPUT"
+          echo "apk_name=app-${DISTRIBUTION}-${DEVICE}-${ABI}-debug.apk" >> "$GITHUB_OUTPUT"
 
       - name: Resolve build hash
         id: build_hash
@@ -141,7 +141,7 @@ jobs:
             echo "value=" >> "$GITHUB_OUTPUT"
           fi
 
-      - name: Build Release APK
+      - name: Build Debug APK
         shell: bash
         run: |
           set -euo pipefail
@@ -163,7 +163,7 @@ jobs:
           EXTRACTOR_BEARER: ${{ secrets.EXTRACTOR_BEARER }}
           NIGHTLY_BUILD_HASH: ${{ steps.build_hash.outputs.value }}
 
-      - name: Resolve release output directory
+      - name: Resolve debug output directory
         id: release_dir
         shell: bash
         run: |
@@ -174,20 +174,20 @@ jobs:
           DEVICE_CAP="${{ steps.variant.outputs.device_cap }}"
           ABI_CAP="${{ steps.variant.outputs.abi_cap }}"
           CANDIDATES=(
-            "app/build/outputs/apk/${DISTRIBUTION}${DEVICE_CAP}${ABI_CAP}/release"
-            "app/build/outputs/apk/${DISTRIBUTION}${DEVICE}${ABI_CAP}/release"
-            "app/build/outputs/apk/${DISTRIBUTION}/${DEVICE}/${ABI}/release"
-            "app/build/outputs/apk/${DISTRIBUTION}/${DEVICE}${ABI_CAP}/release"
-            "app/build/outputs/apk/${DISTRIBUTION}/${DEVICE_CAP}${ABI_CAP}/release"
-            "app/build/outputs/apk/gms${DEVICE_CAP}${ABI_CAP}/release"
-            "app/build/outputs/apk/gms${DEVICE}${ABI_CAP}/release"
-            "app/build/outputs/apk/gms/${DEVICE}/${ABI}/release"
-            "app/build/outputs/apk/gms/${DEVICE}${ABI_CAP}/release"
-            "app/build/outputs/apk/gms/${DEVICE_CAP}${ABI_CAP}/release"
-            "app/build/outputs/apk/${DEVICE}/${ABI}/release"
-            "app/build/outputs/apk/${DEVICE}${ABI_CAP}/release"
-            "app/build/outputs/apk/${DEVICE_CAP}${ABI_CAP}/release"
-            "app/build/outputs/apk/${ABI}/${DEVICE}/release"
+            "app/build/outputs/apk/${DISTRIBUTION}${DEVICE_CAP}${ABI_CAP}/debug"
+            "app/build/outputs/apk/${DISTRIBUTION}${DEVICE}${ABI_CAP}/debug"
+            "app/build/outputs/apk/${DISTRIBUTION}/${DEVICE}/${ABI}/debug"
+            "app/build/outputs/apk/${DISTRIBUTION}/${DEVICE}${ABI_CAP}/debug"
+            "app/build/outputs/apk/${DISTRIBUTION}/${DEVICE_CAP}${ABI_CAP}/debug"
+            "app/build/outputs/apk/gms${DEVICE_CAP}${ABI_CAP}/debug"
+            "app/build/outputs/apk/gms${DEVICE}${ABI_CAP}/debug"
+            "app/build/outputs/apk/gms/${DEVICE}/${ABI}/debug"
+            "app/build/outputs/apk/gms/${DEVICE}${ABI_CAP}/debug"
+            "app/build/outputs/apk/gms/${DEVICE_CAP}${ABI_CAP}/debug"
+            "app/build/outputs/apk/${DEVICE}/${ABI}/debug"
+            "app/build/outputs/apk/${DEVICE}${ABI_CAP}/debug"
+            "app/build/outputs/apk/${DEVICE_CAP}${ABI_CAP}/debug"
+            "app/build/outputs/apk/${ABI}/${DEVICE}/debug"
           )
           for d in "${CANDIDATES[@]}"; do
             if [ -d "$d" ]; then
@@ -199,16 +199,16 @@ jobs:
           FOUND_METADATA="$(
             find app/build/outputs/apk -type f -name "output-metadata.json" \
               \( \
-                -path "*/${DISTRIBUTION}/${DEVICE}/${ABI}/release/output-metadata.json" -o \
-                -path "*/${DISTRIBUTION}${DEVICE}${ABI_CAP}/release/output-metadata.json" -o \
-                -path "*/${DISTRIBUTION}${DEVICE_CAP}${ABI_CAP}/release/output-metadata.json" -o \
-                -path "*/${DISTRIBUTION}/${DEVICE}/${ABI}/*/release/output-metadata.json" -o \
-                -path "*/${DISTRIBUTION}${DEVICE}${ABI_CAP}/*/release/output-metadata.json" -o \
-                -path "*/${DISTRIBUTION}${DEVICE_CAP}${ABI_CAP}/*/release/output-metadata.json" -o \
-                -path "*/${DEVICE}/${ABI}/release/output-metadata.json" -o \
-                -path "*/${DEVICE}${ABI_CAP}/release/output-metadata.json" -o \
-                -path "*/${DEVICE_CAP}${ABI_CAP}/release/output-metadata.json" -o \
-                -path "*/${ABI}/${DEVICE}/release/output-metadata.json" \
+                -path "*/${DISTRIBUTION}/${DEVICE}/${ABI}/debug/output-metadata.json" -o \
+                -path "*/${DISTRIBUTION}${DEVICE}${ABI_CAP}/debug/output-metadata.json" -o \
+                -path "*/${DISTRIBUTION}${DEVICE_CAP}${ABI_CAP}/debug/output-metadata.json" -o \
+                -path "*/${DISTRIBUTION}/${DEVICE}/${ABI}/*/debug/output-metadata.json" -o \
+                -path "*/${DISTRIBUTION}${DEVICE}${ABI_CAP}/*/debug/output-metadata.json" -o \
+                -path "*/${DISTRIBUTION}${DEVICE_CAP}${ABI_CAP}/*/debug/output-metadata.json" -o \
+                -path "*/${DEVICE}/${ABI}/debug/output-metadata.json" -o \
+                -path "*/${DEVICE}${ABI_CAP}/debug/output-metadata.json" -o \
+                -path "*/${DEVICE_CAP}${ABI_CAP}/debug/output-metadata.json" -o \
+                -path "*/${ABI}/${DEVICE}/debug/output-metadata.json" \
               \) \
               | head -n 1 || true
           )"
@@ -217,30 +217,20 @@ jobs:
             exit 0
           fi
 
-          echo "Could not resolve APK release output directory for DISTRIBUTION=$DISTRIBUTION DEVICE=$DEVICE ABI=$ABI"
+          echo "Could not resolve APK debug output directory for DISTRIBUTION=$DISTRIBUTION DEVICE=$DEVICE ABI=$ABI"
           find app/build/outputs/apk -maxdepth 8 -type d -print || true
           exit 1
 
-      - name: Sign APK
-        uses: ilharp/sign-android-release@v2.0.0
-        with:
-          releaseDir: ${{ steps.release_dir.outputs.release_dir }}/
-          signingKey: ${{ secrets.KEYSTORE }}
-          keyAlias: ${{ secrets.KEY_ALIAS }}
-          keyStorePassword: ${{ secrets.KEYSTORE_PASSWORD }}
-          keyPassword: ${{ secrets.KEY_PASSWORD }}
-          buildToolsVersion: 35.0.0
-      
-      - name: Move signed APK
+      - name: Move built APK
         shell: bash
         run: |
           set -euo pipefail
           RELEASE_DIR="${{ steps.release_dir.outputs.release_dir }}"
           mkdir -p "$RELEASE_DIR/out"
-          SIGNED_APK=$(find "$RELEASE_DIR" -type f \( -name "*-signed.apk" -o -name "*-unsigned-signed.apk" \) | head -n 1)
-          mv "$SIGNED_APK" "$RELEASE_DIR/out/${{ steps.variant.outputs.apk_name }}"
+          BUILT_APK=$(find "$RELEASE_DIR" -type f \( -name "*.apk" \) | head -n 1)
+          mv "$BUILT_APK" "$RELEASE_DIR/out/${{ steps.variant.outputs.apk_name }}"
   
-      - name: Upload Signed APK
+      - name: Upload Debug APK
         uses: actions/upload-artifact@v7
         with:
           name: ${{ steps.variant.outputs.artifact_name }}
