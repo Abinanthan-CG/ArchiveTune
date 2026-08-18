@@ -64,6 +64,15 @@ class ArchiveTuneMediaNotificationProvider(
                 PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
             )
 
+        val isPlaying = mediaSession.player.playWhenReady && 
+                (mediaSession.player.playbackState == androidx.media3.common.Player.STATE_READY || 
+                 mediaSession.player.playbackState == androidx.media3.common.Player.STATE_BUFFERING)
+
+        if (!isPlaying) {
+            mediaNotification.notification.flags = mediaNotification.notification.flags and android.app.Notification.FLAG_ONGOING_EVENT.inv()
+            mediaNotification.notification.flags = mediaNotification.notification.flags and android.app.Notification.FLAG_NO_CLEAR.inv()
+        }
+
         return mediaNotification
     }
 
