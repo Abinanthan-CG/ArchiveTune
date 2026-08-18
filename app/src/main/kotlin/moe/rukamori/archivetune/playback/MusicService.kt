@@ -7959,10 +7959,10 @@ class MusicService :
             // notification stays visible but becomes swipe-dismissable
             runCatching {
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                    stopForeground(STOP_FOREGROUND_DETACH)
+                    stopForeground(STOP_FOREGROUND_REMOVE)
                 } else {
                     @Suppress("DEPRECATION")
-                    stopForeground(false)
+                    stopForeground(true)
                 }
             }
             hasCalledStartForeground = false
